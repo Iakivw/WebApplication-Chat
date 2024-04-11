@@ -8,9 +8,20 @@ if ($dbm->checkConnection()) {
     echo "\n";
 }
 
-if ($dbm->createAndInsertTables())
+//if ($dbm->createAndInsertTables())
+//{
+//    echo 'Table Exists!';
+//    echo "\n";
+//}
+
+$upd_val = array(
+    'login' => 'vladimir0',
+    'password' => 345,
+    'privilege' => 0
+);
+if ($dbm->update('users', $upd_val, 'user_id = 5'))
 {
-    echo 'Table Exists!';
+    echo 'Table Updated!';
     echo "\n";
 }
 

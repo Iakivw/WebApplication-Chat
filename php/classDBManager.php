@@ -119,6 +119,28 @@ privilege boolean not null)';
         return (bool)$ins;
     }
 
+    public function update($table, $values, $where = null): bool
+    {
+
+        $update = 'UPDATE ' . $table . ' SET';
+        $numValues = count($values);
+        $i = 0;
+        foreach ($values as $column => $data) {
+            $update .= ' ' . $column . '=';
+            if (is_string($data)) $data = '"' . $data . '"';
+            $update .= $data;
+            $i++;
+            if ($i < $numValues) {
+                $update .= ', ';
+            }
+        }
+
+        if ($where != null) $update .= ' WHERE ' . $where;
+
+        $ins = mysqli_query($this->conn, $update);
+        return (bool)$ins;
+    }
+
     public function delete($table, $where = null): bool
     {
 
