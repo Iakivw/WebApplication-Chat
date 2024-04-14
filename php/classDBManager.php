@@ -54,36 +54,93 @@ class classDBManager
         return $this->db;
     }
 
-    public function createAndInsertTables(): bool
+    public function insertTestData($elem_count = 5): bool
     {
-        $create_tables = 'create table if not EXISTS users 
+        // Plain data doesn't show any patterns
+        // TODO:
+
+        $last_user_id = $this->select('*', 'users', null, 'user_id DESC', 1);
+        if (!$last_user_id) { $last_user_id = 0;}
+            else $last_user_id = $last_user_id[0]['user_id'] + 1;
+        $res_insert_users = 1;
+        for ($i = $last_user_id; $i <= $last_user_id + $elem_count; $i++)
+        {
+            $res_insert_users *= $this->insert('users', [$i, 'alexei' . $i, 'password' . $i, 0]);
+        }
+
+        $last_chat_id = $this->select('*', 'chats', null, 'chat_id DESC', 1);
+        if (!$last_chat_id) { $last_chat_id = 0;}
+            else $last_chat_id = $last_chat_id[0]['user_id'] + 1;
+        $res_insert_chats = 1;
+        for ($i = $last_chat_id; $i <= $last_chat_id + $elem_count; $i++)
+        {
+            $res_insert_chats *= $this->insert('chats', [$i, 'chat'.$i]);
+        }
+
+        $last_message_id = $this->select('*', 'messages', null, 'msg_id DESC', 1);
+        if (!$last_message_id) { $last_message_id = 0;}
+            else $last_message_id = $last_message_id[0]['user_id'] + 1;
+        $res_insert_messages= 1;
+        $res_insert_participants = 1;
+        for ($i = $last_message_id; $i <= $last_message_id + $elem_count; $i++) {
+            $tmp_chat = $i % ($last_chat_id + $elem_count + 1);
+            $tmp_user =  $i % ($last_user_id + $elem_count + 1);
+            $res_insert_messages *= $this->insert('messages', [$i, 'msg' . $i, 0, true, $tmp_chat, $tmp_user]);
+            $res_insert_participants *= $this->insert('participants', [$tmp_chat, $tmp_user]);
+        }
+
+        return $res_insert_users * $res_insert_chats * $res_insert_messages * $res_insert_participants;
+    }
+
+    public function createTables(): bool
+    {
+        $create_users_table = 'create table if not EXISTS users 
 (user_id integer primary key, 
 login varchar(15) not null, 
 password varchar(10) not null,
 privilege boolean not null)';
 
-        $res_create = mysqli_query($this->conn, $create_tables);
+        $create_chats_table = 'create table if not EXISTS chats
+(chat_id integer primary key,
+name varchar(100) not null)';
+
+        $create_messages_table = 'create table if not EXISTS messages
+(msg_id integer primary key,
+text text not null,
+suspicious boolean not null,
+valid boolean not null,
+chat_id INTEGER,
+user_id INTEGER,
+FOREIGN KEY (chat_id) REFERENCES chats(chat_id),
+FOREIGN KEY (user_id) REFERENCES users(user_id))';
+
+        $create_participants_table = 'create table if not EXISTS participants
+(chat_id INTEGER,
+user_id INTEGER,
+PRIMARY KEY (chat_id, user_id),
+FOREIGN KEY (chat_id) REFERENCES chats(chat_id),
+FOREIGN KEY (user_id) REFERENCES users(user_id))';
+
+        $res_create = mysqli_query($this->conn, $create_users_table) *
+        mysqli_query($this->conn, $create_chats_table) *
+        mysqli_query($this->conn, $create_messages_table) *
+        mysqli_query($this->conn, $create_participants_table);
 
         if (!$res_create)
         {
             return false;
         }
 
-        $res_insert = 1;
-        for ($i = 0; $i < 6; $i++)
-        {
-            $res_insert = $res_insert * $this->insert('users', [$i, 'alexei'.$i, 'password'.$i, 0]);
-        }
-
-        return $res_insert;
+        return $res_create;
     }
 
-    public function select($what, $from, $where = null, $order = null): false|array
+    public function select($what, $from, $where = null, $order = null, $limit = null): false|array
     {
         $fetched = array();
         $sql = 'SELECT ' . $what . ' FROM ' . $from;
         if ($where != null) $sql .= ' WHERE ' . $where;
         if ($order != null) $sql .= ' ORDER BY ' . $order;
+        if ($limit != null) $sql .= ' LIMIT ' . $limit;
 
         $query = mysqli_query($this->conn, $sql);
         if ($query) {
@@ -146,10 +203,18 @@ privilege boolean not null)';
 
         $sql = 'DELETE FROM ' . $table . ' WHERE ' . $where;
         if ($where == null) {
-            $sql = 'DELETE ' . $table;
+            $sql = 'TRUNCATE TABLE ' . $table;
         }
         $deleted = @mysqli_query($this->conn, $sql);
         return (bool)$deleted;
+    }
+
+    public function deleteAll()
+    {
+        $this->delete('participants');
+        $this->delete('messages');
+        $this->delete('chats', '1=1');
+        $this->delete('users', '1=1');
     }
 
 }
