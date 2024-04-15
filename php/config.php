@@ -1,5 +1,6 @@
 <?php
 include 'classDBManager.php';
+include 'User.php';
 
 $dbm = new classDBManager(SERVER,USER,PASS,DBNAME);
 //$names =  $dbm->select('*','names');
@@ -7,7 +8,7 @@ if ($dbm->checkConnection()) {
     echo 'BD Connected!';
     echo "\n";
 }
-
+$user = new User(0,'ridik', '111',false);
 if ($dbm->createTables())
 {
     echo 'Tables Created!';
