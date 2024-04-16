@@ -18,4 +18,34 @@ class Message
         $this->valid = $valid;
         $this->suspicious = $suspicious;
     }
+
+    public function getChatId(): int
+    {
+        return $this->chat_id;
+    }
+    public function getMsgId(): int
+    {
+        return $this->msg_id;
+    }
+
+    public function setMsgId(int $msg_id): void
+    {
+        $this->msg_id = $msg_id;
+    }
+    public function getText(): string
+    {
+        return $this->text;
+    }
+    public function getUserId(): int
+    {
+        return $this->user_id;
+    }
+    public function isValid(): bool
+    {
+        return $this->valid;
+    }
+    public function isSuspicious(): bool
+    {
+        return $this->suspicious;
+    }
 }

@@ -1,5 +1,8 @@
 <?php
 include 'User.php';
+include 'Message.php';
+include 'Chat.php';
+include 'Participants.php';
 const SERVER = 'localhost';
 const USER = 'root';
 const PASS = '';
@@ -71,7 +74,7 @@ class classDBManager
 
         $last_chat_id = $this->select('*', 'chats', null, 'chat_id DESC', 1);
         if (!$last_chat_id) { $last_chat_id = 0;}
-            else $last_chat_id = $last_chat_id[0]['user_id'] + 1;
+            else $last_chat_id = $last_chat_id[0]['chat_id'] + 1;
         $res_insert_chats = 1;
         for ($i = $last_chat_id; $i <= $last_chat_id + $elem_count; $i++)
         {
@@ -80,7 +83,7 @@ class classDBManager
 
         $last_message_id = $this->select('*', 'messages', null, 'msg_id DESC', 1);
         if (!$last_message_id) { $last_message_id = 0;}
-            else $last_message_id = $last_message_id[0]['user_id'] + 1;
+            else $last_message_id = $last_message_id[0]['msg_id'] + 1;
         $res_insert_messages= 1;
         $res_insert_participants = 1;
         for ($i = $last_message_id; $i <= $last_message_id + $elem_count; $i++) {
@@ -208,10 +211,18 @@ FOREIGN KEY (user_id) REFERENCES users(user_id))';
             $CLuser->setId($last_user_id);
         }
 
-        return $this->insert('users', [$CLuser->getID(), $CLuser->getLogin(), $CLuser->getPassword(), 0]);
-//        return $this->insert('users', [7, 'antonio', '111', 0]);
+        return $this->insert('users', [$CLuser->getID(), $CLuser->getLogin(), $CLuser->getPassword(), 0+$CLuser->getPrivilege()]);
     }
 
+
+    public function sendMessage(Message $msg)
+    {
+        $last_message_id = $this->select('*', 'messages', null, 'msg_id DESC', 1);
+        if (!$last_message_id) { $last_message_id = 0;}
+        else $last_message_id = $last_message_id[0]['msg_id'] + 1;
+        $msg->setMsgId($last_message_id);
+        return $this->insert('messages', [$msg->getMsgId(), $msg->getText(), 0+$msg->isValid(), 0+$msg->isSuspicious(), $msg->getChatId(), $msg->getUserId()]);
+    }
     public function delete($table, $where = null): bool
     {
 

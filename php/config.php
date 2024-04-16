@@ -7,11 +7,19 @@ if ($dbm->checkConnection()) {
     echo 'BD Connected!';
     echo "\n";
 }
-$usr = new User(-1,'ridik', '111',false);
-echo "User created!\n";
-if($dbm->registration($usr)){
-    echo 'Registration Successful!';
+//$usr1 = new User(-1,'ridik123', '1111',false);
+
+//$usr1 = new User(-1,'ridik', '111',false);
+$msg = new Message(2, -1,"hello1",1,1,false);
+
+if ($dbm->sendMessage($msg)){
+    echo 'Message sent!';
 }
+
+//if($dbm->registration($usr1)){
+//    echo 'Registration Successful!';
+//}
+
 //if ($dbm->createTables())
 //{
 //    echo 'Tables Created!';
