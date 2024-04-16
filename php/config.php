@@ -1,6 +1,5 @@
 <?php
 include 'classDBManager.php';
-include 'User.php';
 
 $dbm = new classDBManager(SERVER,USER,PASS,DBNAME);
 //$names =  $dbm->select('*','names');
@@ -8,15 +7,19 @@ if ($dbm->checkConnection()) {
     echo 'BD Connected!';
     echo "\n";
 }
-$user = new User(0,'ridik', '111',false);
-if ($dbm->createTables())
-{
-    echo 'Tables Created!';
-    echo "\n";
+$usr = new User(-1,'ridik', '111',false);
+echo "User created!\n";
+if($dbm->registration($usr)){
+    echo 'Registration Successful!';
 }
-
-echo $dbm->deleteAll();
-echo $dbm->insertTestData()."\n";
+//if ($dbm->createTables())
+//{
+//    echo 'Tables Created!';
+//    echo "\n";
+//}
+//
+//echo $dbm->deleteAll();
+//echo $dbm->insertTestData()."\n";
 
 //$upd_val = array(
 //    'login' => 'vladimir0',

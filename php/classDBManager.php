@@ -1,4 +1,5 @@
 <?php
+include 'User.php';
 const SERVER = 'localhost';
 const USER = 'root';
 const PASS = '';
@@ -196,6 +197,19 @@ FOREIGN KEY (user_id) REFERENCES users(user_id))';
 
         $ins = mysqli_query($this->conn, $update);
         return (bool)$ins;
+    }
+
+    public function registration(User $CLuser):bool
+    {
+        $last_user_id = $this->select('*', 'users', null, 'user_id DESC', 1);
+        if (!$last_user_id) { $last_user_id = 0;}
+        else $last_user_id = $last_user_id[0]['user_id'] + 1;
+        if($CLuser->getId()==-1){
+            $CLuser->setId($last_user_id);
+        }
+
+        return $this->insert('users', [$CLuser->getID(), $CLuser->getLogin(), $CLuser->getPassword(), 0]);
+//        return $this->insert('users', [7, 'antonio', '111', 0]);
     }
 
     public function delete($table, $where = null): bool
