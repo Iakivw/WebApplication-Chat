@@ -256,12 +256,22 @@ FOREIGN KEY (user_id) REFERENCES users(user_id))';
 
         if (!in_array($msg->getChatId(), $this->fetchChatsFromUserId($usr->getId())))
         {
-            // add user to chat
+            $this->insert('participants', ['user_id' => $msg->getUserId(), 'chat_id' => $msg->getChatId()]);
         };
 
             // TODO: Why is not if here?
         $msg->setMsgId($last_message_id);
         return $this->insert('messages', [$msg->getMsgId(), $msg->getText(), 0 + $msg->isValid(), 0 + $msg->isSuspicious(), $msg->getChatId(), $msg->getUserId()]);
+    }
+
+    public function userChangeLogin($userId, $new_login): bool
+    {
+        $this->update('users', ['login' => $new_login], 'user_id = ' . $userId);
+    }
+
+    public function userChangePassword($userId, $new_password): bool
+    {
+        $this->update('users', ['password' => $new_password], 'user_id = ' . $userId);
     }
 
     public function delete($table, $where = null): bool
