@@ -15,6 +15,7 @@ class User
         $this->privilege=$privilege;
     }
 
+
     public function setId(int $id)
     {
         $this->id=$id;
@@ -38,5 +39,20 @@ class User
     public function getPrivilege(): bool
     {
         return $this->privilege;
+    }
+
+    public function setLogin(string $login): void
+    {
+        $this->login = $login;
+    }
+
+    public function setPassword(string $password): void
+    {
+        $this->password = $password;
+    }
+
+    public function setPrivilege(bool $privilege): void
+    {
+        $this->privilege = $privilege;
     }
 }

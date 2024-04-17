@@ -63,7 +63,7 @@ class classDBManager
         // Plain data doesn't show any patterns
         // TODO:
 
-        $last_user_id = $this->select('*', 'users', null, 'user_id DESC', 1);
+        $last_user_id = $this->select('user_id', 'users', null, 'user_id DESC', 1);
         if (!$last_user_id) { $last_user_id = 0;}
             else $last_user_id = $last_user_id[0]['user_id'] + 1;
         $res_insert_users = 1;
@@ -72,7 +72,7 @@ class classDBManager
             $res_insert_users *= $this->insert('users', [$i, 'alexei' . $i, 'password' . $i, 0]);
         }
 
-        $last_chat_id = $this->select('*', 'chats', null, 'chat_id DESC', 1);
+        $last_chat_id = $this->select('chat_id', 'chats', null, 'chat_id DESC', 1);
         if (!$last_chat_id) { $last_chat_id = 0;}
             else $last_chat_id = $last_chat_id[0]['chat_id'] + 1;
         $res_insert_chats = 1;
@@ -81,7 +81,7 @@ class classDBManager
             $res_insert_chats *= $this->insert('chats', [$i, 'chat'.$i]);
         }
 
-        $last_message_id = $this->select('*', 'messages', null, 'msg_id DESC', 1);
+        $last_message_id = $this->select('msg_id', 'messages', null, 'msg_id DESC', 1);
         if (!$last_message_id) { $last_message_id = 0;}
             else $last_message_id = $last_message_id[0]['msg_id'] + 1;
         $res_insert_messages= 1;
@@ -202,11 +202,40 @@ FOREIGN KEY (user_id) REFERENCES users(user_id))';
         return (bool)$ins;
     }
 
+    public function fetchUserById($userId) : User | null
+    {
+        $result = $this->select('*', 'users', 'user_id = ' . $userId);
+
+        // Проверка наличия результата
+        if ($result) {
+            $result = $result[0];
+            $usr_by_id = new User($result['user_id'], $result['login'],$result['password'], $result['privilege']);
+            return $usr_by_id;
+        } else {
+            return null;
+        }
+    }
+
+    public function fetchChatsFromUserId($userId): array | null
+    {
+        $ans = $this->select('chat_id', 'participants', 'user_id = ' . 1);
+        if ($ans) {
+            $arr = [];
+            for ($i = 0; $i < count($ans); $i++) {
+                array_push($arr, $ans[$i]['chat_id']);
+            };
+            return $arr;
+        }
+        return null;
+    }
+
     public function registration(User $CLuser):bool
     {
-        $last_user_id = $this->select('*', 'users', null, 'user_id DESC', 1);
+        $last_user_id = $this->select('user_id', 'users', null, 'user_id DESC', 1);
         if (!$last_user_id) { $last_user_id = 0;}
-        else $last_user_id = $last_user_id[0]['user_id'] + 1;
+            else $last_user_id = $last_user_id[0]['user_id'] + 1;
+
+        // TODO: Inserting anyway?
         if($CLuser->getId()==-1){
             $CLuser->setId($last_user_id);
         }
@@ -214,15 +243,27 @@ FOREIGN KEY (user_id) REFERENCES users(user_id))';
         return $this->insert('users', [$CLuser->getID(), $CLuser->getLogin(), $CLuser->getPassword(), 0+$CLuser->getPrivilege()]);
     }
 
-
     public function sendMessage(Message $msg)
     {
-        $last_message_id = $this->select('*', 'messages', null, 'msg_id DESC', 1);
+        $last_message_id = $this->select('msg_id', 'messages', null, 'msg_id DESC', 1);
         if (!$last_message_id) { $last_message_id = 0;}
-        else $last_message_id = $last_message_id[0]['msg_id'] + 1;
+            else $last_message_id = $last_message_id[0]['msg_id'] + 1;
+
+
+        $usr = $this->fetchUserById($msg->getUserId());
+        if (is_null($usr)) { return false; }
+
+
+        if (!in_array($msg->getChatId(), $this->fetchChatsFromUserId($usr->getId())))
+        {
+            // add user to chat
+        };
+
+            // TODO: Why is not if here?
         $msg->setMsgId($last_message_id);
-        return $this->insert('messages', [$msg->getMsgId(), $msg->getText(), 0+$msg->isValid(), 0+$msg->isSuspicious(), $msg->getChatId(), $msg->getUserId()]);
+        return $this->insert('messages', [$msg->getMsgId(), $msg->getText(), 0 + $msg->isValid(), 0 + $msg->isSuspicious(), $msg->getChatId(), $msg->getUserId()]);
     }
+
     public function delete($table, $where = null): bool
     {
 

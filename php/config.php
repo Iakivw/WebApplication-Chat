@@ -7,6 +7,7 @@ if ($dbm->checkConnection()) {
     echo 'BD Connected!';
     echo "\n";
 }
+
 //$usr1 = new User(-1,'ridik123', '1111',false);
 
 //$usr1 = new User(-1,'ridik', '111',false);
