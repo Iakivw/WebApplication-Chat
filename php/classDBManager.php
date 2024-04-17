@@ -263,7 +263,6 @@ FOREIGN KEY (user_id) REFERENCES users(user_id))';
         $usr = $this->fetchUserById($msg->getUserId());
         if (is_null($usr)) { return false; }
 
-        print_r($this->fetchChatsFromUserId($usr->getId()));
 
         if (!in_array($msg->getChatId(), $this->fetchChatsFromUserId($usr->getId())))
         {

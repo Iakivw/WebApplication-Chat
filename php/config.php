@@ -17,9 +17,12 @@ if ($dbm->checkConnection()) {
 
 $msg = new Message(3, -1,"banword0",1,0,false);
 
-if ($dbm->sendMessage($msg)){
-    echo 'Message sent!';
-}
+//if ($dbm->sendMessage($msg)){
+//    echo 'Message sent!';
+//}
+
+//$dbm->userDelete(1);
+//$dbm->chatDelete(2);
 
 //if($dbm->registration($usr1)){
 //    echo 'Registration Successful!';
