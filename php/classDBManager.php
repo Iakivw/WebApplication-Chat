@@ -266,12 +266,44 @@ FOREIGN KEY (user_id) REFERENCES users(user_id))';
 
     public function userChangeLogin($userId, $new_login): bool
     {
-        $this->update('users', ['login' => $new_login], 'user_id = ' . $userId);
+        return $this->update('users', ['login' => $new_login], 'user_id = ' . $userId);
     }
 
     public function userChangePassword($userId, $new_password): bool
     {
-        $this->update('users', ['password' => $new_password], 'user_id = ' . $userId);
+        return $this->update('users', ['password' => $new_password], 'user_id = ' . $userId);
+    }
+
+    public function userDelete($userId): bool
+    {
+        if ($this->fetchChatsFromUserId($userId))
+        {
+            if (!$this->delete('participants', 'user_id = ' . $userId))
+            {return false;};
+        }
+        if ($this->select('msg_id', 'messages', 'user_id = '.$userId))
+        {
+            if (!$this->delete('messages', 'user_id = '.$userId))
+            {return false;};
+//            $this->update('messages', 'user_id = ' . null, 'msg_id = '.$userId);
+        }
+        return $this->delete('users', 'user_id = ' . $userId);
+    }
+
+    public function chatDelete($chatId): bool
+    {
+        if ($this->select('chat_id', 'participants', 'chat_id = '.$chatId))
+        {
+            if (!$this->delete('participants', 'chat_id = '.$chatId))
+            {
+                return false;
+            }
+        }
+        if ($this->select('msg_id', 'messages', 'chat_id = '.$chatId))
+        {
+            if (!$this->delete('messages', 'chat_id = '.$chatId)){return false;};
+        }
+        return $this->delete('chats', 'chat_id = ' . $chatId);
     }
 
     public function delete($table, $where = null): bool

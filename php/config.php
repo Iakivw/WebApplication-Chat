@@ -13,9 +13,12 @@ if ($dbm->checkConnection()) {
 //$usr1 = new User(-1,'ridik', '111',false);
 $msg = new Message(2, -1,"hello1",1,1,false);
 
-if ($dbm->sendMessage($msg)){
-    echo 'Message sent!';
-}
+//if ($dbm->sendMessage($msg)){
+//    echo 'Message sent!';
+//}
+
+//$dbm->userDelete(1);
+//$dbm->chatDelete(2);
 
 //if($dbm->registration($usr1)){
 //    echo 'Registration Successful!';
