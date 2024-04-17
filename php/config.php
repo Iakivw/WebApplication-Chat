@@ -7,11 +7,15 @@ if ($dbm->checkConnection()) {
     echo 'BD Connected!';
     echo "\n";
 }
-
+//if ($dbm->createBanWordsTable()){
+//    echo 'Ban Words Table Created!';
+//    $dbm->fillBanWordsTable();
+//}
 //$usr1 = new User(-1,'ridik123', '1111',false);
 
 //$usr1 = new User(-1,'ridik', '111',false);
-$msg = new Message(2, -1,"hello1",1,1,false);
+
+$msg = new Message(3, -1,"banword0",1,0,false);
 
 if ($dbm->sendMessage($msg)){
     echo 'Message sent!';

@@ -48,4 +48,9 @@ class Message
     {
         return $this->suspicious;
     }
+
+    public function setSuspicious(bool $suspicious)
+    {
+        $this->suspicious = $suspicious;
+    }
 }

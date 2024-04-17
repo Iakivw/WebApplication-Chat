@@ -235,12 +235,22 @@ FOREIGN KEY (user_id) REFERENCES users(user_id))';
         if (!$last_user_id) { $last_user_id = 0;}
             else $last_user_id = $last_user_id[0]['user_id'] + 1;
 
-        // TODO: Inserting anyway?
         if($CLuser->getId()==-1){
             $CLuser->setId($last_user_id);
         }
 
         return $this->insert('users', [$CLuser->getID(), $CLuser->getLogin(), $CLuser->getPassword(), 0+$CLuser->getPrivilege()]);
+    }
+
+    public function checkSuspicious($text)
+    {
+        $bans = $this->select('*', 'BanWords');
+        if ($bans) {
+            for ($i = 0; $i < count($bans); $i++) {
+                if ($bans[$i]['word']==$text) return true;
+            };
+            return false;
+        }
     }
 
     public function sendMessage(Message $msg)
@@ -253,25 +263,44 @@ FOREIGN KEY (user_id) REFERENCES users(user_id))';
         $usr = $this->fetchUserById($msg->getUserId());
         if (is_null($usr)) { return false; }
 
+        print_r($this->fetchChatsFromUserId($usr->getId()));
 
         if (!in_array($msg->getChatId(), $this->fetchChatsFromUserId($usr->getId())))
         {
-            $this->insert('participants', ['user_id' => $msg->getUserId(), 'chat_id' => $msg->getChatId()]);
+            $this->insert('participants', [ $msg->getChatId(), $msg->getUserId()]);
         };
 
-            // TODO: Why is not if here?
+        if($this->checkSuspicious($msg->getText())){$msg->setSuspicious(true);}
+
         $msg->setMsgId($last_message_id);
-        return $this->insert('messages', [$msg->getMsgId(), $msg->getText(), 0 + $msg->isValid(), 0 + $msg->isSuspicious(), $msg->getChatId(), $msg->getUserId()]);
+        return $this->insert('messages', [$msg->getMsgId(), $msg->getText(),  0 + $msg->isSuspicious(),0 + $msg->isValid(), $msg->getChatId(), $msg->getUserId()]);
     }
 
     public function userChangeLogin($userId, $new_login): bool
     {
-        $this->update('users', ['login' => $new_login], 'user_id = ' . $userId);
+        return $this->update('users', ['login' => $new_login], 'user_id = ' . $userId);
     }
 
     public function userChangePassword($userId, $new_password): bool
     {
-        $this->update('users', ['password' => $new_password], 'user_id = ' . $userId);
+        return $this->update('users', ['password' => $new_password], 'user_id = ' . $userId);
+    }
+
+    public function createBanWordsTable():bool
+    {
+        $ban_table = 'create table if not EXISTS BanWords  
+(word varchar(15) not null)';
+        return (bool)mysqli_query($this->conn, $ban_table);
+    }
+
+    public function fillBanWordsTable($elem_count=5):bool
+    {
+        $res_insert_bans = 1;
+        for ($i = 0; $i <= $elem_count; $i++)
+        {
+            $res_insert_bans *= $this->insert('BanWords', ['banword'.$i]);
+        }
+        return $res_insert_bans;
     }
 
     public function delete($table, $where = null): bool
